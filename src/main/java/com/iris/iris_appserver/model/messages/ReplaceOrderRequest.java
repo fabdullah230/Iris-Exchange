@@ -1,0 +1,24 @@
+package com.iris.iris_appserver.model.messages;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReplaceOrderRequest {
+    private String origOrderId;
+    private String origClOrdId;
+    private String newOrderId;
+    private String clOrdId;
+    private String instrumentId;
+    private String side;
+    private double quantity;
+    private String orderType;
+    private Double price;
+    private String timeInForce;
+    private String sourceIpAddress;
+}

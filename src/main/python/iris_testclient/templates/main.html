@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIX Protocol Client</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+<div class="app-container">
+    <header>
+        <h1>Iris FIX Gateway</h1>
+        <div id="connection-status">Disconnected</div>
+    </header>
+
+    <div class="main-content">
+        <!-- Connection Panel -->
+        <div class="panel connection-panel">
+            <div class="panel-header">Connection</div>
+            <div class="panel-content">
+                <div class="form-group">
+                    <label for="sender-compid">Sender CompID:</label>
+                    <input type="text" id="sender-compid" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="target-compid">Target CompID:</label>
+                    <input type="text" id="target-compid" class="form-control">
+                </div>
+                <div class="button-group">
+                    <button id="connect-btn" class="btn btn-primary">Connect</button>
+                    <button id="disconnect-btn" class="btn btn-danger" disabled>Disconnect</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Panel -->
+        <div class="panel message-panel">
+            <div class="panel-header">Messages</div>
+            <div class="panel-content">
+                <div class="message-list" id="message-list">
+                    <!-- Messages will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Detail Panel -->
+        <div class="panel detail-panel">
+            <div class="panel-header">Message Details</div>
+            <div class="panel-content">
+                <div id="message-detail">
+                    <!-- Selected message details will be displayed here -->
+                    <div class="no-message">No message selected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Entry Panel -->
+        <div class="panel order-panel">
+            <div class="panel-header">New Order</div>
+            <div class="panel-content">
+                <div class="form-group">
+                    <label for="symbol">Symbol:</label>
+                    <input type="text" id="symbol" class="form-control">
+                </div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="side">Side:</label>
+                        <select id="side" class="form-control">
+                            <option value="BUY">Buy</option>
+                            <option value="SELL">Sell</option>
+                        </select>
+                    </div>
+                    <div class="form-group half">
+                        <label for="order-type">Type:</label>
+                        <select id="order-type" class="form-control">
+                            <option value="MARKET">Market</option>
+                            <option value="LIMIT">Limit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" id="quantity" class="form-control" min="0" step="1">
+                    </div>
+                    <div class="form-group half">
+                        <label for="price">Price:</label>
+                        <input type="number" id="price" class="form-control" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="time-in-force">Time in Force:</label>
+                    <select id="time-in-force" class="form-control">
+                        <option value="DAY">Day</option>
+                        <option value="GTC">GTC</option>
+                        <option value="IOC">IOC</option>
+                        <option value="FOK">FOK</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button id="send-order-btn" class="btn btn-success" disabled>Send Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

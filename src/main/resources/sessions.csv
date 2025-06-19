@@ -1,0 +1,5 @@
+# Format: Name,FIXSenderCompId,ClearingAccount
+Participant_1,IRISPAR1,CLR1
+Participant_2,IRISPAR2,CLR2
+Participant_3,IRISPAR3,CLR3
+Athos_Capital,ATHOS01,CLR4

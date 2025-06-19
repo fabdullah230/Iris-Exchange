@@ -1,0 +1,9 @@
+iii           iii                    iiiiiiii
+                                 i      ii       ii
+ii   ii  ii  ii     iiiii      i     i  ii  i       i
+ii   iiiiiii iii  iiiiiiii    i         iiii    i    i
+ii   iii     iii  iii         i    i  ii    iii   i  i
+ii   iii     iii   iiiii      i         iiiii        i
+ii   iii     iii      iiii    i  i    i      i   i   i
+ii   iii     iii       iii      i   i           i  i
+ii   iii     iii  iiiiiiii        i iiii     iii i

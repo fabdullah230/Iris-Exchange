@@ -2,6 +2,41 @@
 
 IRIS is a high-performance trading platform that provides matching engine, order management, and market data distribution capabilities. The platform is built using Java Spring Boot for the server components and Python for the test client.
 
+## Trading Example
+
+The following example demonstrates order matching between two FIX clients (IRISPAR1 and IRISPAR2) trading AAPL:
+
+<table>
+<tr>
+    <td width="50%">
+        <strong>Step 1: IRISPAR1 Sends Limit Order</strong><br/>
+        <img src="docs/images/IRISPAR1_send_new_LIMIT.png" width="100%"/>
+    </td>
+    <td width="50%">
+        <strong>Step 2: IRISPAR2 Sends Market Order</strong><br/>
+        <img src="docs/images/IRISPAR2_send_new_MARKET.png" width="100%"/>
+    </td>
+</tr>
+<tr>
+    <td colspan="2" align="center">
+        <strong>Step 3: Order Matched and Filled</strong><br/>
+        <img src="docs/images/IRISPAR1_LIMIT_FILLED.png" width="60%"/>
+    </td>
+</tr>
+</table>
+
+Flow:
+- IRISPAR1: BUY LIMIT order (10 AAPL @ 150.0 GTC)
+- IRISPAR2: SELL MARKET order (10 AAPL IOC)
+- Final execution: Complete fill at 150.0
+
+Features:
+- Order entry through FIX protocol
+- Different order types (Limit vs Market)
+- Different time in force instructions (GTC vs IOC)
+- Real-time order matching
+- Execution reporting via FIX messages
+
 ## System Architecture
 
 ### Components
@@ -104,45 +139,11 @@ Run multiple test clients on different ports to use multiple FIX sessions to tra
 cd iris_testclient
 python app.py --port {port_number}
 ```
-## Trading Example
-
-The following example demonstrates order matching between two FIX clients (IRISPAR1 and IRISPAR2) trading AAPL:
-
-<table>
-<tr>
-    <td width="50%">
-        <strong>Step 1: IRISPAR1 Sends Limit Order</strong><br/>
-        <img src="docs/images/IRISPAR1_send_new_LIMIT.png" width="100%"/>
-    </td>
-    <td width="50%">
-        <strong>Step 2: IRISPAR2 Sends Market Order</strong><br/>
-        <img src="docs/images/IRISPAR2_send_new_MARKET.png" width="100%"/>
-    </td>
-</tr>
-<tr>
-    <td colspan="2" align="center">
-        <strong>Step 3: Order Matched and Filled</strong><br/>
-        <img src="docs/images/IRISPAR1_LIMIT_FILLED.png" width="60%"/>
-    </td>
-</tr>
-</table>
-
-The example shows:
-- IRISPAR1: BUY LIMIT order (10 AAPL @ 150.0 GTC)
-- IRISPAR2: SELL MARKET order (10 AAPL IOC)
-- Final execution: Complete fill at 150.0
-
-This demonstrates:
-- Order entry through FIX protocol
-- Different order types (Limit vs Market)
-- Different time in force instructions (GTC vs IOC)
-- Real-time order matching
-- Execution reporting via FIX messages
 
 
 ### Exchange Configuration
 
-The platform uses several configuration files located in `src/main/resources/`:
+The platform uses several configuration files located in `src/main/resources/`    
 Restart the exchange services in sequence after any configuration changes.
 
 1. **Session Configuration**
@@ -203,8 +204,10 @@ SocketAcceptPort=9876
 Persistence implementation is in progress. The initial schema includes:
 - `orders`: Stores order details
 - `trades`: Records executed trades
-- `market_data`: Holds real-time market data
-- `exchange_config`: Stores exchange-specific configurations
+- `orderbook`: Holds real-time market data
+- `settlement_prices`: Contains settlement prices for instruments
+- `reference_prices`: Stores reference prices for instruments
+- `exchange_config`: Stores exchange services configurations
 - `risk_management`: Contains risk parameters and limits
 - `fix_sessions`: Manages FIX session
 - `instruments`: Defines trading instruments
@@ -212,14 +215,16 @@ Persistence implementation is in progress. The initial schema includes:
 
 ### In Development
 1. **Persistence Layer** (High Priority)
-    - Order storage and recovery
-    - Trade history
-    - Market data persistence
+    - Trading data
+    - Configuration data
+    - Exchange data
+    - Participant data
    
 8. **Market Data Distribution** (High Priority)
     - Real-time order book updates
     - Trade data dissemination
     - Market statistics
+    - Trading status updates
    
 2. **Exchange management dashboard** (High Priority)
     - Centralized dashboard for monitoring and managing exchanges

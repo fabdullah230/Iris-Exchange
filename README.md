@@ -108,42 +108,37 @@ python app.py --port {port_number}
 
 The following example demonstrates order matching between two FIX clients (IRISPAR1 and IRISPAR2) trading AAPL:
 
-### Step 1: IRISPAR1 Sends Limit Order
-<img src="docs/images/IRISPAR1_send_new_LIMIT.png" width="400"/>     
+<table>
+<tr>
+    <td width="50%">
+        <strong>Step 1: IRISPAR1 Sends Limit Order</strong><br/>
+        <img src="docs/images/IRISPAR1_send_new_LIMIT.png" width="100%"/>
+    </td>
+    <td width="50%">
+        <strong>Step 2: IRISPAR2 Sends Market Order</strong><br/>
+        <img src="docs/images/IRISPAR2_send_new_MARKET.png" width="100%"/>
+    </td>
+</tr>
+<tr>
+    <td colspan="2" align="center">
+        <strong>Step 3: Order Matched and Filled</strong><br/>
+        <img src="docs/images/IRISPAR1_LIMIT_FILLED.png" width="60%"/>
+    </td>
+</tr>
+</table>
 
-IRISPAR1 submits a limit buy order:
-- Symbol: AAPL
-- Side: BUY
-- Type: LIMIT
-- Price: 150.0
-- Quantity: 10
-- Time in Force: GTC 
+The example shows:
+- IRISPAR1: BUY LIMIT order (10 AAPL @ 150.0 GTC)
+- IRISPAR2: SELL MARKET order (10 AAPL IOC)
+- Final execution: Complete fill at 150.0
 
-### Step 2: IRISPAR2 Sends Market Order
-<img src="docs/images/IRISPAR2_send_new_MARKET.png" width="400"/>     
-
-IRISPAR2 submits a market sell order:
-- Symbol: AAPL
-- Side: SELL
-- Type: MARKET
-- Quantity: 10
-- Time in Force: IOC 
-
-### Step 3: Order Matched and Filled
-<img src="docs/images/IRISPAR1_LIMIT_FILLED.png" width="400"/>
-
-The matching engine matches both orders and sends execution reports:
-- IRISPAR1's limit buy order is filled at 150.0
-- Full execution quantity: 10
-- Trade completes with price: 150.0
-- Detailed FIX message information shown in message details panel
-
-This example demonstrates:
+This demonstrates:
 - Order entry through FIX protocol
 - Different order types (Limit vs Market)
 - Different time in force instructions (GTC vs IOC)
 - Real-time order matching
 - Execution reporting via FIX messages
+
 
 ### Exchange Configuration
 

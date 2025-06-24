@@ -50,16 +50,16 @@ Features:
 
 - **Backend**:
     - Java 17
-    - Spring Boot 3.4.4
+    - Spring Boot
     - QuickFIX/J
-    - PostgreSQL 15
+    - PostgreSQL 
     - Maven
 
 - **Test Client**:
-    - Python 3.9+
+    - Python 
     - Flask
     - Socket.IO
-    - HTML/CSS/JavaScript
+    - HTML
   
 - **Message Queue**:
     - Kafka  

@@ -1,10 +1,10 @@
 # IRIS Trading Platform
 
-IRIS is a high-performance trading platform that provides matching engine, order management, and market data distribution capabilities. The platform is built using Java Spring Boot for the server components and Python for the test client.
+IRIS is a high-performance trading platform that provides matching engine, newOrder management, and market data distribution capabilities. The platform is built using Java Spring Boot for the server components and Python for the test client.
 
 ## Trading Example
 
-The following example demonstrates order matching between two FIX clients (IRISPAR1 and IRISPAR2) trading AAPL:
+The following example demonstrates newOrder matching between two FIX clients (IRISPAR1 and IRISPAR2) trading AAPL:
 
 <table>
 <tr>
@@ -26,23 +26,23 @@ The following example demonstrates order matching between two FIX clients (IRISP
 </table>
 
 Flow:
-- IRISPAR1: BUY LIMIT order (10 AAPL @ 150.0 GTC)
-- IRISPAR2: SELL MARKET order (10 AAPL IOC)
+- IRISPAR1: BUY LIMIT newOrder (10 AAPL @ 150.0 GTC)
+- IRISPAR2: SELL MARKET newOrder (10 AAPL IOC)
 - Final execution: Complete fill at 150.0
 
 Features:
 - Order entry through FIX protocol
-- Different order types (Limit vs Market)
+- Different newOrder types (Limit vs Market)
 - Different time in force instructions (GTC vs IOC)
-- Real-time order matching
+- Real-time newOrder matching
 - Execution reporting via FIX messages
 
 ## System Architecture
 
 ### Components
 
-- **App Server** (`iris_appserver`): FIX gateway and order entry point
-- **Matching Engine** (`iris_matchingengine`): Core order matching system
+- **App Server** (`iris_appserver`): FIX gateway and newOrder entry point
+- **Matching Engine** (`iris_matchingengine`): Core newOrder matching system
 - **Exchange Operations** (`iris_exchangeoperations`): Exchange management and administrative operations
 - **Test Client** (`iris_testclient`): Python-based FIX client for testing
 
@@ -88,7 +88,7 @@ pip install -r requirements.txt
 
 ```
 iris/
-├── iris_appserver/          # FIX gateway and order entry
+├── iris_appserver/          # FIX gateway and newOrder entry
 ├── iris_matchingengine/     # Core matching engine
 ├── iris_exchangeoperations/ # Admin operations
 ├── iris_testclient/        # Python test client
@@ -202,7 +202,7 @@ SocketAcceptPort=9876
 ## Database Schema
 
 Persistence implementation is in progress. The initial schema includes:
-- `orders`: Stores order details
+- `orders`: Stores newOrder details
 - `trades`: Records executed trades
 - `orderbook`: Holds real-time market data
 - `settlement_prices`: Contains settlement prices for instruments
@@ -221,7 +221,7 @@ Persistence implementation is in progress. The initial schema includes:
     - Participant data
    
 8. **Market Data Distribution** (High Priority)
-    - Real-time order book updates
+    - Real-time newOrder book updates
     - Trade data dissemination
     - Market statistics
     - Trading status updates

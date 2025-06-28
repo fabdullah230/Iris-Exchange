@@ -31,6 +31,7 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
+        <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -56,27 +57,38 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
+        <!-- Development Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
+        <!-- PostgreSQL Database Driver -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>42.6.0</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- Spring Boot Configuration Processor -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.28</version> <!-- Use the latest version -->
+            <scope>provided</scope>
         </dependency>
+
+        <!-- Testing Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -93,7 +105,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- QuickFIX/J dependencies -->
+        <!-- Hibernate Types -->
+        <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-60</artifactId>
+            <version>2.21.1</version>
+        </dependency>
+
+        <!-- QuickFIX/J Dependencies -->
         <dependency>
             <groupId>org.quickfixj</groupId>
             <artifactId>quickfixj-core</artifactId>
@@ -112,6 +131,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>2.1.1</version> <!-- Use the latest compatible version -->
         </dependency>
     </dependencies>
 
@@ -149,7 +173,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Allow for multiple main classes -->
                     <mainClass>${start-class}</mainClass>
                     <excludes>
                         <exclude>
@@ -163,7 +186,6 @@
     </build>
 
     <profiles>
-        <!-- Profile for App Server -->
         <profile>
             <id>appserver</id>
             <properties>
@@ -171,8 +193,6 @@
                 <spring.profiles.active>appserver</spring.profiles.active>
             </properties>
         </profile>
-
-        <!-- Profile for Matching Engine -->
         <profile>
             <id>matchingengine</id>
             <properties>

@@ -1,6 +1,6 @@
 package com.iris.iris_matchingengine.model;
 
-import com.iris.common.model.Order;
+import com.iris.common.model.NewOrder;
 import lombok.Builder;
 import lombok.Data;
 import java.time.Instant;
@@ -25,20 +25,20 @@ public class OrderBookEntry {
     // For quick retrieval during matching
     private int sequenceNumber;
 
-    public static OrderBookEntry fromOrder(Order order, String clientId, int sequenceNumber) {
+    public static OrderBookEntry fromOrder(NewOrder newOrder, String clientId, int sequenceNumber) {
         return OrderBookEntry.builder()
-                .orderId(order.getOrderId() != null ? order.getOrderId() : UUID.randomUUID().toString())
-                .clOrdId(order.getClOrdId())
-                .instrumentId(order.getInstrumentId())
-                .side(order.getSide())
-                .originalQuantity(order.getQuantity())
-                .remainingQuantity(order.getQuantity())
-                .price(order.getPrice() != null ? order.getPrice() : 0)
-                .orderType(order.getOrderType())
-                .timeInForce(order.getTimeInForce())
+                .orderId(newOrder.getOrderId() != null ? newOrder.getOrderId() : UUID.randomUUID().toString())
+                .clOrdId(newOrder.getClOrdId())
+                .instrumentId(newOrder.getInstrumentId())
+                .side(newOrder.getSide())
+                .originalQuantity(newOrder.getQuantity())
+                .remainingQuantity(newOrder.getQuantity())
+                .price(newOrder.getPrice() != null ? newOrder.getPrice() : 0)
+                .orderType(newOrder.getOrderType())
+                .timeInForce(newOrder.getTimeInForce())
                 .entryTime(Instant.now())
                 .clientId(clientId)
-                .sourceIp(order.getSourceIpAddress())
+                .sourceIp(newOrder.getSourceIpAddress())
                 .sequenceNumber(sequenceNumber)
                 .build();
     }

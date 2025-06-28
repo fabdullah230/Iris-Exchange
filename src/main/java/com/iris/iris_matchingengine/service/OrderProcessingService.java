@@ -2,7 +2,10 @@ package com.iris.iris_matchingengine.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iris.common.model.Execution;
-import com.iris.common.model.Order;
+
+import com.iris.common.model.NewOrder;
+import com.iris.common.model.db.Order;
+import com.iris.common.model.db.Trade;
 import com.iris.common.model.messages.*;
 import com.iris.iris_matchingengine.model.MatchResult;
 import com.iris.iris_matchingengine.model.OrderBook;
@@ -12,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,41 +32,95 @@ public class OrderProcessingService {
     private final ObjectMapper objectMapper;
 
 
+    private final AsyncEventPublisher asyncEventPublisher;
+
+    // Add these helper methods to create DB entities
+    private Order createDbOrder(OrderBookEntry entry, String status) {
+        return Order.builder()
+                .orderId(entry.getOrderId())
+                .clOrdId(entry.getClOrdId())
+                .instrumentId(entry.getInstrumentId())
+                .side(entry.getSide())
+                .quantity(BigDecimal.valueOf(entry.getOriginalQuantity()))
+                .remainingQuantity(BigDecimal.valueOf(entry.getRemainingQuantity()))
+                .price(BigDecimal.valueOf(entry.getPrice()))
+                .orderType(entry.getOrderType())
+                .timeInForce(entry.getTimeInForce())
+                .clientId(entry.getClientId())
+                .sourceIp(entry.getSourceIp())
+                .entryTime(LocalDateTime.now())
+                .lastUpdatedTime(LocalDateTime.now())
+                .status(status)
+                .build();
+    }
+
+    private Trade createDbTrade(MatchResult match) {
+        return Trade.builder()
+                .tradeId(match.getTradeId())
+                .instrumentId(match.getAggressorOrder().getInstrumentId())
+                .price(BigDecimal.valueOf(match.getMatchPrice()))
+                .quantity(BigDecimal.valueOf(match.getMatchedQuantity()))
+                .buyerOrderId(match.getAggressorOrder().getSide().equals("BUY") ?
+                        match.getAggressorOrder().getOrderId() :
+                        match.getRestingOrder().getOrderId())
+                .sellerOrderId(match.getAggressorOrder().getSide().equals("SELL") ?
+                        match.getAggressorOrder().getOrderId() :
+                        match.getRestingOrder().getOrderId())
+                .buyerClOrdId(match.getAggressorOrder().getSide().equals("BUY") ?
+                        match.getAggressorOrder().getClOrdId() :
+                        match.getRestingOrder().getClOrdId())
+                .sellerClOrdId(match.getAggressorOrder().getSide().equals("SELL") ?
+                        match.getAggressorOrder().getClOrdId() :
+                        match.getRestingOrder().getClOrdId())
+                .buyerClientId(match.getAggressorOrder().getSide().equals("BUY") ?
+                        match.getAggressorOrder().getClientId() :
+                        match.getRestingOrder().getClientId())
+                .sellerClientId(match.getAggressorOrder().getSide().equals("SELL") ?
+                        match.getAggressorOrder().getClientId() :
+                        match.getRestingOrder().getClientId())
+                .tradeTime(LocalDateTime.now())
+                .build();
+    }
+
+
+
     /**
      * Process a new order
      * @param message New order message
      */
     public void processNewOrder(NewOrderMessage message) {
-        Order order = message.getOrder();
+        NewOrder newOrder = message.getNewOrder();
         String clientId = message.getClientId();
 
         // Validate instrument
-        if (!instrumentService.isValidInstrument(order.getInstrumentId())) {
-            sendRejection(order, clientId, "Invalid instrument");
+        if (!instrumentService.isValidInstrument(newOrder.getInstrumentId())) {
+            sendRejection(newOrder, clientId, "Invalid instrument");
             return;
         }
 
         // Validate order type and other fields
-        if (!isValidOrderType(order)) {
-            sendRejection(order, clientId, "Invalid order type or parameters");
+        if (!isValidOrderType(newOrder)) {
+            sendRejection(newOrder, clientId, "Invalid order type or parameters");
             return;
         }
 
         boolean isBuyOrder;
-        if ("BUY".equalsIgnoreCase(order.getSide())) {
+        if ("BUY".equalsIgnoreCase(newOrder.getSide())) {
             isBuyOrder = true;
-        } else if ("SELL".equalsIgnoreCase(order.getSide())) {
+        } else if ("SELL".equalsIgnoreCase(newOrder.getSide())) {
             isBuyOrder = false;
         } else {
-            sendRejection(order, clientId, "Invalid order side: " + order.getSide());
+            sendRejection(newOrder, clientId, "Invalid order side: " + newOrder.getSide());
             return;
         }
 
         // Create order book entry
-        OrderBookEntry entry = OrderBookEntry.fromOrder(order, clientId, 0);
+        OrderBookEntry entry = OrderBookEntry.fromOrder(newOrder, clientId, 0);
+        asyncEventPublisher.publishOrder(createDbOrder(entry, "NEW"));
+
 
         // Process order depending on side (buy or sell)
-        OrderBook orderBook = orderBookManager.getOrderBook(order.getInstrumentId());
+        OrderBook orderBook = orderBookManager.getOrderBook(newOrder.getInstrumentId());
         List<MatchResult> matches;
 
         if (isBuyOrder) {
@@ -77,9 +136,11 @@ public class OrderProcessingService {
         if (entry.getRemainingQuantity() > 0 && !"IOC".equals(entry.getTimeInForce())) {
             orderBook.addOrder(entry);
             sendExecutionReport(entry, clientId, "NEW", null, null);
+            asyncEventPublisher.publishOrder(createDbOrder(entry, "NEW"));
         } else if ("IOC".equals(entry.getTimeInForce()) && entry.getRemainingQuantity() > 0) {
             // For IOC orders, cancel any remaining quantity
             sendExecutionReport(entry, clientId, "CANCELED", "Immediate-or-cancel", null);
+            asyncEventPublisher.publishOrder(createDbOrder(entry, "CANCELED"));
         }
     }
 
@@ -204,6 +265,15 @@ public class OrderProcessingService {
             cumulativeQty += match.getMatchedQuantity();
             avgPrice = ((avgPrice * (cumulativeQty - match.getMatchedQuantity())) +
                     (match.getMatchPrice() * match.getMatchedQuantity())) / cumulativeQty;
+
+            asyncEventPublisher.publishTrade(createDbTrade(match));
+
+            // Update orders in DB
+            asyncEventPublisher.publishOrder(createDbOrder(aggressorOrder,
+                    aggressorOrder.getRemainingQuantity() > 0 ? "PARTIALLY_FILLED" : "FILLED"));
+            asyncEventPublisher.publishOrder(createDbOrder(match.getRestingOrder(),
+                    match.getRestingOrder().getRemainingQuantity() > 0 ? "PARTIALLY_FILLED" : "FILLED"));
+
 
             // Send fill for the aggressor order
             sendExecutionReport(
@@ -373,17 +443,17 @@ public class OrderProcessingService {
 
     /**
      * Send a rejection for an invalid order
-     * @param order Order
+     * @param newOrder Order
      * @param clientId Client ID
      * @param reason Rejection reason
      */
-    private void sendRejection(Order order, String clientId, String reason) {
+    private void sendRejection(NewOrder newOrder, String clientId, String reason) {
         Execution execution = Execution.builder()
-                .orderId(order.getOrderId())
-                .clOrdId(order.getClOrdId())
+                .orderId(newOrder.getOrderId())
+                .clOrdId(newOrder.getClOrdId())
                 .execId(UUID.randomUUID().toString())
-                .instrumentId(order.getInstrumentId())
-                .side(order.getSide())
+                .instrumentId(newOrder.getInstrumentId())
+                .side(newOrder.getSide())
                 .execType("REJECTED")
                 .orderStatus("REJECTED")
                 .text(reason)
@@ -407,18 +477,18 @@ public class OrderProcessingService {
 
     /**
      * Validate order type and parameters
-     * @param order Order
+     * @param newOrder Order
      * @return True if valid
      */
-    private boolean isValidOrderType(Order order) {
-        if (order.getOrderType() == null) {
+    private boolean isValidOrderType(NewOrder newOrder) {
+        if (newOrder.getOrderType() == null) {
             return false;
         }
 
         // Basic validation
-        if ("LIMIT".equalsIgnoreCase(order.getOrderType())) {
-            return order.getPrice() != null && order.getPrice() > 0;
-        } else if ("MARKET".equalsIgnoreCase(order.getOrderType())) {
+        if ("LIMIT".equalsIgnoreCase(newOrder.getOrderType())) {
+            return newOrder.getPrice() != null && newOrder.getPrice() > 0;
+        } else if ("MARKET".equalsIgnoreCase(newOrder.getOrderType())) {
             return true; // Market orders don't need price
         }
 

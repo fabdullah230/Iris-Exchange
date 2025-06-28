@@ -1,6 +1,6 @@
 package com.iris.common.model.messages;
 
-import com.iris.common.model.Order;
+import com.iris.common.model.NewOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +16,5 @@ public class NewOrderMessage {
     private String messageId;
     private long timestamp;
     private String clientId;
-    private Order order;
+    private NewOrder newOrder;
 }
